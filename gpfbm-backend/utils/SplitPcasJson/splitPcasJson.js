@@ -1,13 +1,11 @@
 const fs = require('fs')
 
-let getTownInProvince = async () => {
-    let path = './pcas-code.json'
+let splitPcasJson = async (jsonFilePath, jsonFileSavePath) => {
+
     try {
-        let data = fs.readFileSync(path)
+        let data = fs.readFileSync(jsonFilePath)
 
         let temp = JSON.parse(data.toString('utf-8'))
-
-        let jsonFileSavePath = `./provenceJson`
 
         if (!fs.existsSync(jsonFileSavePath)) {
             fs.mkdirSync(jsonFileSavePath)
@@ -23,4 +21,12 @@ let getTownInProvince = async () => {
     }
 }
 
-getTownInProvince()
+
+module.exports = {
+    splitPcasJson
+}
+
+let jsonFilePath = '../../../pcas-data/pcas-code.json'
+let jsonFileSavePath = '../../../pcas-data/provenceJson'
+
+splitPcasJson(jsonFilePath, jsonFileSavePath)

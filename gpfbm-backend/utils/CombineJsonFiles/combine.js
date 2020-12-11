@@ -1,6 +1,6 @@
 const fs = require('fs')
 
-let handleJsonDirectory = (fileName, jsonDirectoryPath) => {
+let combineJsonFiles = (fileName, jsonDirectoryPath) => {
 
     try {
         // 遍历指定文件夹的文件
@@ -26,4 +26,11 @@ let handleJsonDirectory = (fileName, jsonDirectoryPath) => {
     }
 }
 
-handleJsonDirectory('./pcas-code-with-location.json', '../pcas-code-with-location');
+module.exports = {
+    combineJsonFiles
+}
+
+let fileName = '../../../pcas-data/pcas-code-with-coordinates.json';
+let jsonDirectoryPath = '../../../pcas-data/pcas-code-with-coordinates';
+
+combineJsonFiles(fileName, jsonDirectoryPath);

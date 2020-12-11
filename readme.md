@@ -1,14 +1,14 @@
 # 项目内容全国行政区域(省市区镇)经纬度数据及其获取
 
-## 项目内容
+# 项目内容
 
 一份**包含 中华人民共和国行政区划 4 级 省级、地级、县级、乡级(省\市\区\镇)行政区域的名称\编码以及经纬度数据文件**.
 
 以及**获取经纬度的方法**.
 
-(预计包含 json xlsx sql ) Chinese Administrative divisions with Longitude and latitude
+预计包含 json xlsx sql 格式；数据在`pacs-data`文件夹下。
 
-## 需求说明
+# 需求说明
 
 无论前后端,在设计到行政地址坐标的时候,都会有这个 中国行政区域地址坐标的需求.常见的就只需要到省\市\区 3 级即可,
 特殊一点的会到镇级\村级.随着级别越深,数据越大,管理越麻烦.
@@ -29,16 +29,29 @@
 
 因此,我需要一份数据,**包含 4 级(省\市\区\镇)行政区域的名称\编码以及经纬度**,目前没找到合适的,所以需要动手自己去获取.
 
-## 包含哪些内容
+# 包含哪些内容
 
-### 用到的东西
+## 项目内容
+
+数据在`pcas-data`文件夹下，如下图：
+
+![1](./notes/pic/9.png)
+
+**pcas-code.json** 为 [Administrative-divisions-of-China](https://github.com/modood/Administrative-divisions-of-China)项目中`省份、城市、区县、乡镇” 四级联动数据`文件。  
+**pcas-code-with-coordinates.json** 为以`pcas-code.json`为基准，生成的带**经纬度数据**并拍平结构的数据文件。  
+**pcas-code-with-coordinates.sql** 为`pcas-code-with-coordinates.json`数据的 sql 版本。  
+**pcas-code-with-coordinates.xlsx** 为`pcas-code-with-coordinates.json`数据的 xlsx 表格版本。
+
+## 用到的东西
 
 1 简单的 nodejs fs 模块文件读写的使用  
 2 最基础的 angular 使用(前端载体,其他任何同样功能工具都可以)  
 3 最基础的 koa 及相关必要组件的使用  
-4 百度地图 JavaScript API 几个基础接口的使用
+4 百度地图 JavaScript API 几个基础接口的使用  
+5 简单的 json to xlsx 文件转换  
+……
 
-### 开发测试环境
+## 开发测试环境
 
 OS:Ubuntu18.04  
 nodejs:14.15.0  
@@ -46,7 +59,12 @@ chrome:86
 angular:10.2  
 百度地图 js API:3.0
 
-## 数据获取思路
+# 测试使用说明
+
+`gpfbm-angular` 为 angular 项目,需要本地安装相关 cli,然后进入该文件加下运行`ng serve -o`本地测试启动  
+`gpfbm-backend` 为 nodejs 项目,需要本地安装 nodejs(推荐当前最新稳定版本),然后进入该文件加下运行`node koaServer.js`本地测试启动
+
+# 数据获取思路
 
 很简单,`Administrative-divisions-of-China`这个项目已经有比较好的行政区域名称\编码数据了,我们只需要把每个区域名称补入经纬度即可.
 
@@ -73,7 +91,7 @@ angular:10.2
 
 这份文件 pcas-code.json 格式化之后有 18w+行,也就是说有四五万个到乡镇的数据,前端单页面去一次性请求完我是没有成功的,是有 chrome 内存溢出\内存不足等问题,一个多小时就没了.所以我的计划是切成单独的省,分为 31 个(其不含港澳台),一次性少请求几个省的即保证成功,也尽量安全.
 
-可以从 pcas-code.json 文件里面意义复制出来,或者使用本项目中 ``splitPcasJson.js`,在"provenceJson"文件夹中会生成 31 个小文件,如下图
+可以从 pcas-code.json 文件里面意义复制出来,或者使用本项目中 `gpfbm-backend/utils/SplitPcasJson/splitPcasJson.js`,会在`pcas-data`生一个"provenceJson"文件夹,其中会生成 31 个小文件,如下图(**请查看修改使用时注意事实的文件读写地址**)
 
 ![1](./notes/pic/3.png)
 
@@ -89,19 +107,19 @@ angular:10.2
 
 ``BMap.Geocoder().getPoint()`通过名称获取经纬度.
 
-``BMap.Geocoder().getLocation()`通过经纬度获取地址名称.
+~~``BMap.Geocoder().getLocation()`通过经纬度获取地址名称.~~
 
 使用示例可看`百度地图API批量地址解析示例.html`文件.
 
 ### 前端加载 pcas-code-provence-\*.json 文件,通过百度地图 API 获取经纬度
 
-一开始我是在使用[vue-typescript-admin-template](https://github.com/Armour/vue-typescript-admin-template)模块的已有项目里面引入百度地图 JavaScript API 的,但是这个 ts 中按照网上找的资料没有成功.同事使用 JavaScript 版本的 VUE 引入是非常正常的.但因为我突然发现好久没有写 angular 了,就新建了 angular 项目,引入百度地图 JavaScript API.
+一开始我是在使用[vue-typescript-admin-template](https://github.com/Armour/vue-typescript-admin-template)模块的已有项目里面引入百度地图 JavaScript API 的,但是这个 ts 中按照网上找的资料没有成功.同事使用 JavaScript 版本的 VUE 引入是非常正常的.但因为我突然发现好久没有写 angular 了,就新建了空 angular 项目,引入百度地图 JavaScript API.
 
-以下内容就是在 angular 项目 demo 中为例子了,如果是 vue,我建议使用 js 开发的引入可以方便些,其他的请自行处理,也就调用一两个接口的问题,大概看个思路就好了.
+以下内容就是在 angular 项目 demo 中为例子了,如果是 vue,我建议使用 js 开发的引入可以方便些,其他的请自行处理,**也就调用一两个接口的问题,大概看个思路就好了.**
 
 值得一体的是,一开始我想的是直接写一个 html 文件就好了,不过一万年没用过 jquery 了,加上麻烦的跨域问题和自认为应该很少前端开发不会用框架了,加上私心,就简单用 angular 引入 API 之后操作了.
 
-对应 angular 项目就是[gpfbm-angular]().(gpfbm 为 Get Point From BaiduMap)
+对应 angular 项目就是`gpfbm-angular`(gpfbm 为 Get Point From BaiduMap)
 
 ### 一切从简,准备如下:
 
@@ -506,22 +524,34 @@ app.listen(3000, () => {
 
 百度地图 API 中使用的行政区域名称和 pcas-code.json 文件的不一定一致,就会出现查不到经纬度的地址
 
-(就是`pcas-code-*--with-location-指定区域地址查不了经纬度.json`文件).
+(就是`pcas-code-provence*-with-coordinates-指定区域地址查不了经纬度.json`文件).
 
 这已经是查询过两次的结果了，例如直接在 `海南省省直辖县级行政区划琼中黎族苗族自治县`里面查询`上安乡`没有结果，我已经再使用`海南省`里面去查询`上安乡`，假如还是没结果（实际上是查得到），那我也暂时就不过多处理了。
 
-这我就还没有想到办法,只能手动去[百度地图拾取坐标系统](https://api.map.baidu.com/lbsapi/getpoint/index.html)输入这份文件中的`mergeName+name`手动获取经纬度拼接了.
+(20201211)这我就还没有想到办法,只能手动去[百度地图拾取坐标系统](https://api.map.baidu.com/lbsapi/getpoint/index.html)输入这份文件中的`mergeName+name`手动获取经纬度拼接了.
 
-2 现在是多份多类型文件,不是一整份文件.
+## 处理成一整份 JSON 文件.
 
 这简单 fs 再读写以下文件成大 json 即可.
 
-可参看 CombineJsonFiles/combine.js,思路就是 读、追加写、读、遍历替换"]["、写。
+可参看 `gpfbm-backend/utils/CombineJsonFiles/combine.js`,思路就是 读、追加写、读、遍历替换"]["、写。
 
-运行之后会有一份`pcas-code-with-location.json`文件，包含所有镇级地址及其经纬度数据。
+**注意，因为是要替换“][”，所以不能先格式化成 json 显示格式，不然就匹配不到。**
+
+运行之后会有一份`gpfbm-backend/pcas-data/pcas-code-with-coordinates.json`文件，包含所有镇级地址及其经纬度数据。
 
 ## 处理成 sql 文件
 
 json to csv / to xlsx 都是比较简单的,去 npm 简单搜一下工具包就好.
 
 不过转成 sql 的话歧义比较多,主要是用于 json 形式 builder 指定 sql 语句.我还是觉得直接简单用 nodejs 的 fs 模块读读拼拼写写顺手些.
+
+可参看 `gpfbm-backend/utils/ExportToSql/toSql.js`,思路就是 写、读、追加写，是利用上一节生成的`pcas-code-with-coordinates.json`转成 sql 文件。
+
+运行之后会有一份`gpfbm-backend/pcas-data/pcas-code-with-coordinates.json`文件，包含所有镇级地址及其经纬度数据。
+
+## 处理成 xlsx 文件
+
+我使用的是 npm 库[excel4node](https://www.npmjs.com/package/excel4node)，将 json 转为 xlsx，可参看 `gpfbm-backend/utils/ExportToXlsx/exportXlsxFromJson.js`,
+
+运行之后会有一份`gpfbm-backend/pcas-data/pcas-code-with-coordinates.xlsx`文件，包含所有镇级地址及其经纬度数据。

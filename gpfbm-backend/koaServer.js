@@ -13,8 +13,19 @@ app.use(cors())
 // 子路由
 let page = new Router()
 page.get('/hello', async (ctx) => {
+
+    try {
+        // pcas-data文件夹下要手动新建一个 pcas-code-with-coordinates 文件夹,否则出错(为了方便不做检查和代码创建)
+        let jsonFileSavePath = `./pcas-data/pcas-code-with-coordinates`
+
+        if (!fs.existsSync(jsonFileSavePath)) {
+            fs.mkdirSync(jsonFileSavePath)
+        }
+    } catch (error) {
+        console.log(error)
+    }
+
     ctx.body = 'hello page!'
-    // your_ak
 })
 
 page.post('/area', async (ctx) => {
@@ -22,8 +33,8 @@ page.post('/area', async (ctx) => {
     let { area, noArea, noLngLat, name } = body;
 
     try {
-        // 当前文件夹下要手动新建一个 pcas-code-with-location 文件夹,否则出错(为了方便不做检查和代码创建)
-        let jsonFileSavePath = `./pcas-code-with-location`
+        // pcas-data文件夹下要手动新建一个 pcas-code-with-coordinates 文件夹,否则出错(为了方便不做检查和代码创建)
+        let jsonFileSavePath = `../pcas-data/pcas-code-with-coordinates`
 
         if (!fs.existsSync(jsonFileSavePath)) {
             fs.mkdirSync(jsonFileSavePath)

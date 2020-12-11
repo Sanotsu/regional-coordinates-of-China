@@ -9,6 +9,7 @@
   "author": "swmlee",
   "license": "ISC",
   "dependencies": {
+    "excel4node": "^1.7.2",
     "koa": "^2.13.0",
     "koa-body": "^4.2.0",
     "koa-router": "^10.0.0",

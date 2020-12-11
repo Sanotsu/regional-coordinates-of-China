@@ -19,14 +19,12 @@ export class AppComponent implements OnInit {
   // BMap.Geocoder()实例,专用来通过名称获取经纬度
   pointGeo: any;
 
-  // BMap.Geocoder()实例,专用来通过经纬度查询具体位置
-  locationGeo: any;
+  // // BMap.Geocoder()实例,专用来通过经纬度查询具体位置
+  // locationGeo: any;
 
 
   // 通过名称无法查询到经纬度的
   resultNoLngLatArr = [];
-  // 通过经纬度,无法反查出名称的
-  resultNoAreaArr = [];
   // 能够正常通过名称查询经纬度,又能经纬度反查名称的
   resultAreaArr = [];
   // 每个pcas-code-provence*.json文件处理完之后.存储的查询结果
@@ -45,10 +43,9 @@ export class AppComponent implements OnInit {
 
     // 初始化两个Geocoder
     this.pointGeo = new BMap.Geocoder();
-    // 创建地理编码实例, 并配置参数获取乡镇级数据
-    this.locationGeo = new BMap.Geocoder({ extensions_town: true });
+    // // 创建地理编码实例, 并配置参数获取乡镇级数据
+    // this.locationGeo = new BMap.Geocoder({ extensions_town: true });
   }
-
 
   /**
    * 指定父级区域下指定行政地区 查询经纬度
@@ -62,89 +59,28 @@ export class AppComponent implements OnInit {
   getPoint(areaName, parentArea, mergeParent, areaCode, level): any {
     return new Promise((resolve, reject) => {
 
-      // let areaObj = {
-      //   name: areaName,
-      //   code: areaCode,
-      //   level,
-      //   mergeName: parentArea + areaName,
-      //   lng: 0,
-      //   lat: 0,
-      //   info: ''
-      // };
+      // 预设好返回百度地图js API返回手动拼接的数据结构
+      let areaObj = {
+        name: areaName,
+        code: areaCode,
+        level,
+        mergeName: parentArea + areaName,
+        lng: 0,
+        lat: 0,
+        info: ''
+      };
 
       // 查询指定父级区域内指定区域的经纬度 
       this.pointGeo.getPoint(areaName, (point) => {
         if (point) {
           const address = new BMap.Point(point.lng, point.lat);
-          /**
-           * 如果只想名称查到坐标,不用反查回去了,就直接此处resolve回去杰克,节约一半的请求  
-           */
-          // areaObj.lng = address.lng;
-          // areaObj.lat = address.lat;
-          // areaObj.info = '直接查询';
 
-          const areaObj = {
-            name: areaName,
-            code: areaCode,
-            level,
-            mergeName: parentArea,
-            lng: address.lng,
-            lat: address.lat,
-            info: '直接查询'
-          };
-          // 能够正常通过名称查询经纬度,又能经纬度反查名称的结果
+          // 能够直接查到经纬度的结果
+          areaObj.lng = address.lng;
+          areaObj.lat = address.lat;
+          areaObj.info = '直接查询获得';
+
           resolve({ area: areaObj });
-
-          /**
-           * 又或者,根据坐标得到地址描述 
-           */
-          // this.locationGeo.getLocation(new BMap.Point(address.lng, address.lat), (result) => {
-          //   if (result) {
-          //     // console.log('result', result, areaName, areaCode, level);
-          //     /**
-          //      * 根据level的不同,在result去取值的级别和数量就不同,把被查询名称的父级,统统拼接在一起
-          //      */
-          //     let mergeName;
-          //     if (level === 1) {
-          //       mergeName = result.addressComponents.province;
-          //     }
-          //     if (level === 2) {
-          //       mergeName = result.addressComponents.province + ',' + result.addressComponents.city;
-          //     }
-          //     if (level === 3) {
-          //       mergeName = result.addressComponents.province + ',' + result.addressComponents.city
-          //         + ',' + result.addressComponents.district;
-          //     }
-          //     if (level === 4) {
-          //       mergeName = result.addressComponents.province + ',' + result.addressComponents.city
-          //         + ',' + result.addressComponents.district + ',' + result.addressComponents.town;
-          //     }
-
-          //     const areaObj = {
-          //       name: areaName,
-          //       code: areaCode,
-          //       level,
-          //       mergeName,
-          //       lng: address.lng,
-          //       lat: address.lat
-          //     };
-          //     // 能够正常通过名称查询经纬度,又能经纬度反查名称的结果
-          //     resolve({ area: areaObj });
-          //   } else {
-          //     // 要记录哪些查到了经纬度,反查地址名称时没有结果
-          //     const noAreaObj = {
-          //       name: areaName,
-          //       code: areaCode,
-          //       level,
-          //       mergeName: parentArea,
-          //       lng: address.lng,
-          //       lat: address.lat,
-          //       info: '根据经纬度查不到地址名称',
-          //     };
-          //     resolve({ noArea: noAreaObj });
-          //   }
-          // });
-
         } else {
           /**
            * 如果某个地区(例如镇)在指定的上一级(例如区)内查不到,则直接指定最顶级(省)内去查询,提高查询命中率
@@ -154,36 +90,17 @@ export class AppComponent implements OnInit {
             this.pointGeo.getPoint(areaName, (p) => {
               if (p) {
                 const addr = new BMap.Point(p.lng, p.lat);
-                const areaObj = {
-                  name: areaName,
-                  code: areaCode,
-                  level,
-                  mergeName: parentArea,
-                  lng: addr.lng,
-                  lat: addr.lat,
-                  info: '第二次通过省份查询成功'
-                };
 
-                // areaObj.lng = addr.lng;
-                // areaObj.lat = addr.lat;
-                // areaObj.info = '第二次通过省份查询成功';
+                // 将父级区域提升到省级查到的结果
+                areaObj.lng = addr.lng;
+                areaObj.lat = addr.lat;
+                areaObj.info = '第二次通过省份查询成功';
 
-                // 能够正常通过名称查询经纬度,又能经纬度反查名称的结果
                 resolve({ area: areaObj });
               } else {
-                // 没查到经纬度的区域也要记录
-                const noLngLatObj = {
-                  name: areaName,
-                  code: areaCode,
-                  level,
-                  mergeName: parentArea,
-                  lng: 0,
-                  lat: 0,
-                  info: '根据地址名称两次查询都查不到经纬度'
-                };
-                // areaObj.info = '根据地址名称两次查询都查不到经纬度';
-
-                resolve({ noLngLat: noLngLatObj });
+                // 没查到经纬度的区域也要记录(20201211 实测父级到省了都查得到)
+                areaObj.info = '根据地址名称两次查询都查不到经纬度';
+                resolve({ noLngLat: areaObj });
               }
             }, (tempArr.slice(0, 1)).join(''))
           }
@@ -223,16 +140,12 @@ export class AppComponent implements OnInit {
           // 为了保持数据完整,即便没有查询到经纬度,也把该行政区域放进去,只不过经纬度为0而已
           this.resultAreaArr.push(rst.area);
         }
-        if (rst.noArea) {
-          this.resultNoAreaArr.push(rst.noArea);
-        }
         if (rst.area) {
           this.resultAreaArr.push(rst.area);
         }
 
         if (e.children) {
           if (e.children.length > 0) {
-
             /**
              * 这个地方是因为,pcas-code.json文件 有些市级和区级是一样名称的地区,如果拼接到一起,百度地图的API无法识别
              * 例如 横沥镇 东坑镇 在广东省(省)东莞市(市)东莞市(区) 下,调用百度地图API寻找 广东省东莞市东莞市是找不到那两个镇的,在广东省东莞市 下可以
@@ -257,13 +170,14 @@ export class AppComponent implements OnInit {
     return;
   }
 
+  // 获取经纬度并传给后台处理 
   async handlePcas(): Promise<any> {
 
     // tslint:disable-next-line: no-console
     console.time('total');
     // 这个31,其实就是拆分的小pcas-code-*.json文件的数量,31个省,但最好不要一次性就遍历处理31个,崩溃啊,溢出啊,挺麻烦的
-    // 三五个一次把,改动这个for循环就好
-    for (let n = 1; n <= 31; n++) {
+    // 三五个一次吧,改动这个for循环就好
+    for (let n = 1; n <= 2; n++) {
 
       try {
         const res = await this.ljs.loadpcas(n).toPromise();
@@ -279,18 +193,15 @@ export class AppComponent implements OnInit {
         console.timeEnd(`start${n}`);
 
         const data = {
-          area: this.resultAreaArr,
-          noArea: this.resultNoAreaArr.length > 0 ? this.resultAreaArr : '',
-          noLngLat: this.resultNoLngLatArr.length > 0 ? this.resultNoLngLatArr : '',
-          name: `pcas-code-provence${n}-with-location`
+          area: this.resultAreaArr, // 成功查到经纬度的结果
+          noLngLat: this.resultNoLngLatArr.length > 0 ? this.resultNoLngLatArr : '', // // 查不到经纬度的结果,如果为空,给后台传空
+          name: `pcas-code-provence${n}-with-coordinates` // 后台保存文件的名称
         };
         try {
           const writeRst = await this.ljs.pushDataToServer(data).toPromise();
           // 每个省份的文件处理完,把结果数组清空(2选一的写法,都写上示意)
           this.resultAreaArr.length = 0;
           this.resultAreaArr = [];
-          this.resultNoAreaArr.length = 0;
-          this.resultNoAreaArr = [];
           this.resultNoLngLatArr.length = 0;
           this.resultNoLngLatArr = [];
 

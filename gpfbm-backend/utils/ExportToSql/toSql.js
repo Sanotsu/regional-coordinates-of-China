@@ -5,6 +5,10 @@ let exportToSql = (fileName, jsonPath) => {
     // 建表语句
     let createTableStatement = `
 -- ----------------------------
+-- Created Time : ${new Date()}
+-- ----------------------------
+
+-- ----------------------------
 -- Table structure for china_area
 -- ----------------------------
 DROP TABLE IF EXISTS \`china_area\`;
@@ -46,5 +50,11 @@ CREATE TABLE \`china_area\` (
     }
 }
 
-// exportToSql('pcas-location.sql', './demo.sql')
-exportToSql('pcas-location.sql', '../CombineJsonFiles/pcas-code-with-location.json')
+
+module.exports = {
+    exportToSql
+}
+
+let fileName = '../../../pcas-data/pcas-code-with-coordinates.sql';
+let jsonPath = '../../../pcas-data/pcas-code-with-coordinates.json';
+exportToSql(fileName, jsonPath);
