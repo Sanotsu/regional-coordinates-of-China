@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script type="text/javascript"
+        src="//https://api.map.baidu.com/api?type=webgl&v=1.0&ak=your_ak"></script>
+    <script type="text/javascript"
+        src="http://api.map.baidu.com/api?v=3.0&ak=your_ak"></script>
+    <title>批量地址解析</title>
+    <style>
+        body,
+        html {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
+
+        #container {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        #result {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            width: 350px;
+            height: 480px;
+            line-height: 30px;
+            text-align: center;
+            background: #fff;
+            box-shadow: 0 2px 6px 0 rgba(27, 142, 236, 0.5);
+            border-radius: 7px;
+            z-index: 99;
+        }
+
+        #result>div:first-child {
+            width: 100%;
+            height: 40px;
+            text-align: center;
+            line-height: 40px;
+            background: #00BFFF;
+            border-radius: 7px 7px 0px 0px;
+            color: #fff;
+        }
+
+        #result ul {
+            list-style-type: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        #result ul li {
+            color: #000;
+            padding: 7px;
+            font-size: 14px;
+            text-align: justify;
+            border-bottom: 1px solid #D3D3D3
+        }
+
+        #result>div:last-child {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 10px;
+        }
+
+        .btn {
+            width: 100px;
+            height: 35px;
+            color: #fff;
+            font-size: 14px;
+            ;
+            border-radius: 5px;
+            background: #00BFFF;
+            box-shadow: none;
+        }
+
+        .btn:hover {
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <div id='container'></div>
+    <div id='result'>
+        <div>批量地址解析</div>
+        <ul>
+            <li>1、包河区金寨路1号（金寨路与望江西路交叉口）</li>
+            <li>2、庐阳区凤台路209号（凤台路与蒙城北路交叉口）</li>
+            <li>3、蜀山区金寨路217号(近安医附院公交车站)</li>
+            <li>4、蜀山区梅山路10号(近安徽饭店)</li>
+            <li>5、蜀山区 长丰南路159号铜锣湾广场312室</li>
+            <li>6、合肥市寿春路93号钱柜星乐町KTV（逍遥津公园对面）</li>
+            <li>7、庐阳区长江中路177号</li>
+            <li>8、新站区胜利路89</li>
+        </ul>
+        <div>
+            <button onclick='bdGEO()' class='btn'>批量解析</button>
+        </div>
+    </div>
+    <script>
+        var map = new BMap.Map('container');
+        map.centerAndZoom(new BMap.Point(117.269945, 31.86713), 13);
+        map.enableScrollWheelZoom(true);
+        var myGeo = new BMap.Geocoder();
+        var adds = [
+            "包河区金寨路1号（金寨路与望江西路交叉口）",
+            "庐阳区凤台路209号（凤台路与蒙城北路交叉口）",
+            "蜀山区金寨路217号(近安医附院公交车站)",
+            "蜀山区梅山路10号(近安徽饭店) ",
+            "蜀山区 长丰南路159号铜锣湾广场312室",
+            "合肥市寿春路93号钱柜星乐町KTV（逍遥津公园对面）",
+            "庐阳区长江中路177号",
+            "新站区胜利路89"
+        ];
+        var index = 0;
+        function bdGEO() {
+            if (index < adds.length) {
+                var add = adds[index];
+                geocodeSearch(add);
+                index++;
+            }
+        }
+        function geocodeSearch(add) {
+            if (index < adds.length) {
+                setTimeout(window.bdGEO, 400);
+            }
+            myGeo.getPoint(add, function (point) {
+
+                console.log(point)
+
+                if (point) {
+                    var address = new BMap.Point(point.lng, point.lat);
+                    addMarker(address, new BMap.Label(index + ":" + add, { offset: new BMap.Size(10, -10) }));
+                }
+            }, "合肥市");
+        }
+        // 编写自定义函数,创建标注
+        function addMarker(point, label) {
+            var marker = new BMap.Marker(point);
+            map.addOverlay(marker);
+            marker.setLabel(label);
+        }
+    </script>
+</body>
+
+</html>
