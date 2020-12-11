@@ -64,7 +64,7 @@ export class AppComponent implements OnInit {
         name: areaName,
         code: areaCode,
         level,
-        mergeName: parentArea + areaName,
+        mergeName: mergeParent + ',' + areaName,
         lng: 0,
         lat: 0,
         info: ''
@@ -156,11 +156,12 @@ export class AppComponent implements OnInit {
 
             if (parentName.includes(e.name) || e.name === '市辖区') {
               newParent = parentName;
-              newMergeParent = mergeParent;
             } else {
               newParent = parentName + e.name;
-              newMergeParent = mergeParent ? mergeParent + ',' + e.name : e.name;
             }
+
+            // 这个mergeParent用于查询时已经只取省份了，所以不用提出同名（城市、区县和“直辖市”）
+            newMergeParent = mergeParent ? mergeParent + ',' + e.name : e.name;
 
             await this.getChilds(e.children, level + 1, newMergeParent, newParent);
           }
@@ -177,7 +178,7 @@ export class AppComponent implements OnInit {
     console.time('total');
     // 这个31,其实就是拆分的小pcas-code-*.json文件的数量,31个省,但最好不要一次性就遍历处理31个,崩溃啊,溢出啊,挺麻烦的
     // 三五个一次吧,改动这个for循环就好
-    for (let n = 1; n <= 2; n++) {
+    for (let n = 27; n <= 31; n++) {
 
       try {
         const res = await this.ljs.loadpcas(n).toPromise();

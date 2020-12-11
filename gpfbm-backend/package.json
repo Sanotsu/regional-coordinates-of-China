@@ -4,7 +4,8 @@
   "description": "",
   "main": "koaServer.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "gen-files": "node ./utils/CombineJsonFiles/combine.js && node ./utils/ExportToSql/toSql.js"
   },
   "author": "swmlee",
   "license": "ISC",
