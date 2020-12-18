@@ -9,6 +9,7 @@
 预计包含 json xlsx sql 格式；数据在`pacs-data`文件夹下。
 
 # 目录
+
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
@@ -29,7 +30,7 @@
 - [按需处理数据](#%E6%8C%89%E9%9C%80%E5%A4%84%E7%90%86%E6%95%B0%E6%8D%AE)
   - [目前还是有以下问题:](#%E7%9B%AE%E5%89%8D%E8%BF%98%E6%98%AF%E6%9C%89%E4%BB%A5%E4%B8%8B%E9%97%AE%E9%A2%98)
     - [1 某些 pcas-code.json 文件中的地区取不到经纬度](#1-%E6%9F%90%E4%BA%9B-pcas-codejson-%E6%96%87%E4%BB%B6%E4%B8%AD%E7%9A%84%E5%9C%B0%E5%8C%BA%E5%8F%96%E4%B8%8D%E5%88%B0%E7%BB%8F%E7%BA%AC%E5%BA%A6)
-    - [~~<span id="jump">2 某些地区通过百度地图 JS API 查询出来的经纬度可能不准确(20201215 已更新)</span>~~](#span-idjump2-%E6%9F%90%E4%BA%9B%E5%9C%B0%E5%8C%BA%E9%80%9A%E8%BF%87%E7%99%BE%E5%BA%A6%E5%9C%B0%E5%9B%BE-js-api-%E6%9F%A5%E8%AF%A2%E5%87%BA%E6%9D%A5%E7%9A%84%E7%BB%8F%E7%BA%AC%E5%BA%A6%E5%8F%AF%E8%83%BD%E4%B8%8D%E5%87%86%E7%A1%AE20201215-%E5%B7%B2%E6%9B%B4%E6%96%B0span)
+    - [~~2 某些地区通过百度地图 JS API 查询出来的经纬度可能不准确(20201215 已更新)~~](#2-%E6%9F%90%E4%BA%9B%E5%9C%B0%E5%8C%BA%E9%80%9A%E8%BF%87%E7%99%BE%E5%BA%A6%E5%9C%B0%E5%9B%BE-js-api-%E6%9F%A5%E8%AF%A2%E5%87%BA%E6%9D%A5%E7%9A%84%E7%BB%8F%E7%BA%AC%E5%BA%A6%E5%8F%AF%E8%83%BD%E4%B8%8D%E5%87%86%E7%A1%AE20201215-%E5%B7%B2%E6%9B%B4%E6%96%B0)
   - [处理成一整份 JSON 文件.](#%E5%A4%84%E7%90%86%E6%88%90%E4%B8%80%E6%95%B4%E4%BB%BD-json-%E6%96%87%E4%BB%B6)
   - [处理成 sql 文件](#%E5%A4%84%E7%90%86%E6%88%90-sql-%E6%96%87%E4%BB%B6)
   - [处理成 xlsx 文件](#%E5%A4%84%E7%90%86%E6%88%90-xlsx-%E6%96%87%E4%BB%B6)
@@ -110,7 +111,7 @@ angular:10.2
 3 不管直接 html、 vue 、angular、 ... 前端没有直接的文件系统,chrome 之前有实验性质新特性 API 可直接关联操作系统的文件系统,(⊙o⊙)…,没必要，先 pass 了.
 
 所以,整体思路就是  
-1 先把 pcas-code.json 文件分为小份,每次处理一个或少数几个省；  
+1 先把 `pcas-code.json` 文件分为小份,每次处理一个或少数几个省；  
 2 前端调用百度地图 js API,循环递归调用地址解析接口,把结果拼接成适合的结构；  
 3 把该结果传递给后台,由后台写入文件；  
 4 按照需求，把文件合并、修改结构、转换为其他格式等等……
@@ -119,11 +120,11 @@ angular:10.2
 
 ## 将 pcas-code.json 文件切分为以省为单位的小 json 文件
 
-我在编写此文时(20201209),从`Administrative-divisions-of-China`项目中获取到的最新的 4 级行政区域名称及编号 json 文件 pcas-code.json 是 2020/11/06 的(2.4.0 版本).如果后续有最新的,可以自行去获取.下文以 2.4.0 版为例说明.
+我在编写此文时(20201209),从`Administrative-divisions-of-China`项目中获取到的最新的 4 级行政区域名称及编号 json 文件 `pcas-code.json` 是 2020/11/06 的(2.4.0 版本).如果后续有最新的,可以自行去获取.下文以 2.4.0 版为例说明.
 
-这份文件 pcas-code.json 格式化之后有 18w+行,也就是说有四五万个到乡镇的数据,前端单页面去一次性请求完我是没有成功的,是可能有内存不足、存储不足等问题,一个多小时就没了.所以我的计划是切成单独的省,分为 31 个(其不含港澳台),一次性少请求几个省的即保证成功,也尽量安全.
+这份文件 `pcas-code.json` 格式化之后有 18w+行,也就是说有四五万个到乡镇的数据,前端单页面去一次性请求完我是没有成功的,是可能有内存不足、存储不足等问题,一个多小时就没了.所以我的计划是切成单独的省,分为 31 个(其不含港澳台),一次性少请求几个省的即保证成功,也尽量安全.
 
-可以从 pcas-code.json 文件里面意义复制出来,或者使用本项目中 `gpfbm-backend/utils/SplitPcasJson/splitPcasJson.js`,会在`pcas-data`生一个"provenceJson"文件夹,其中会生成 31 个小文件,如下图(**请查看修改使用时注意事实的文件读写地址**)
+可以从 `pcas-code.json` 文件里面意义复制出来,或者使用本项目中 `gpfbm-backend/utils/SplitPcasJson/splitPcasJson.js`,会在`pcas-data`生一个<span   id="provenceJson">"provenceJson"文件夹</span>,其中会生成 31 个小文件,如下图(**请查看修改使用时注意事实的文件读写地址**)
 
 ![1](./notes/pic/3.png)
 
@@ -131,21 +132,26 @@ angular:10.2
 
 ### 怎样才能使用百度地图 JavaScript API?
 
-先去[百度地图开放平台](https://lbsyun.baidu.com/)注册个个人开发者帐号(简单的话).
+先去[百度地图开放平台](https://lbsyun.baidu.com/)注册个个人开发者帐号(图简单的话).
 
 然后进入控制台-> 我的应用,创建一个浏览器端应用.得到访问应用（AK）,这个就是调用百度地图 JavaScript API 的凭证了.
 
-使用的相关接口,就是[逆/地址解析](http://lbsyun.baidu.com/index.php?title=jspopular3.0/guide/geocoding)
+使用的相关接口,就是  
+[逆/地址解析](http://lbsyun.baidu.com/index.php?title=jspopular3.0/guide/geocoding)
 
-``BMap.Geocoder().getPoint()`通过名称获取经纬度.
+`BMap.Geocoder().getPoint()`通过名称获取经纬度.
 
-~~``BMap.Geocoder().getLocation()`通过经纬度获取地址名称.~~
+~~`BMap.Geocoder().getLocation()`通过经纬度获取地址名称.~~
 
-使用示例可看`gpfbm-backend/百度地图API批量地址解析示例.html`文件.
+[检索 POI](http://lbsyun.baidu.com/index.php?title=jspopular3.0/guide/search)
+
+`BMap.LocalSearch()`通过名称获取详细地址信息.
+
+使用示例可直接看[官网](http://lbsyun.baidu.com/jsdemo.htm#i1_4)(推荐),或看`gpfbm-backend/百度地图API批量地址解析示例.html`(前者)文件.
 
 ### 前端加载 pcas-code-provence-\*.json 文件,通过百度地图 API 获取经纬度
 
-一开始我是在使用[vue-typescript-admin-template](https://github.com/Armour/vue-typescript-admin-template)模板的已有项目里面引入百度地图 JavaScript API 的,但是这个引入按照网上找的资料没有成功.同事使用 JavaScript 版本的 VUE 引入是非常正常的.但因为我突然发现好久没有写 angular 了,就新建了空 angular 项目,引入百度地图 JavaScript API.
+一开始我是在使用[vue-typescript-admin-template](https://github.com/Armour/vue-typescript-admin-template)模板的已有项目里面引入百度地图 JavaScript API 的,但是这个引入按照网上找的示例没有成功.同事使用 JavaScript 版本的 VUE 引入是非常正常的.但因为我突然发现好久没有写 angular 了,就新建了空 angular 项目,引入百度地图 JavaScript API.
 
 以下内容就是在 angular 项目 demo 中为例子了,如果是 vue,我建议使用 js 开发的引入可以方便些,其他的请自行处理,**也就调用一两个接口的问题,大概看个思路就好了.**
 
@@ -179,7 +185,7 @@ angular:10.2
 
 ![1](./notes/pic/5.png)
 
-4 在 src/assets/下放入之前 切分的 provenceJson 下小 pcas-code-provence\*.json 文件(第 3 步 service 中读取的位置)
+4 在 src/assets/下放入之前 切分的 provenceJson 下小 pcas-code-provence\*.json 文件(第 3 步 service 中读取的位置,也就是[这个](#provenceJson).
 
 ![1](./notes/pic/6.png)
 
@@ -283,7 +289,7 @@ ngOnInit(): void {
 
 ~~这是应该的,那只需把 getLocation 那一段删掉,直接 resolve 结果就好.但我在用的时候,就遇到了地址查到了经纬度,但反查失败的案例,虽然极少数,但还是发生,原因也不清楚,所以才搞了这么一个反解析.~~
 
-拼接后正常可查到经纬度的结果,大概会是这个样子
+拼接后正常可查到经纬度的结果,大概会是这个样子(**根据实际需求,可以拼成任何自己想要的结构,毕竟数据都有了**)
 
 ```
 [
@@ -518,9 +524,9 @@ app.listen(3000, () => {
 
 (20201211)这我就还没有想到办法,只能手动去[百度地图拾取坐标系统](https://api.map.baidu.com/lbsapi/getpoint/index.html)输入这份文件中的`mergeName+name`手动获取经纬度拼接了.
 
-### ~~<span id="jump">2 某些地区通过百度地图 JS API 查询出来的经纬度可能不准确(20201215 已更新)</span>~~
+### ~~2 某些地区通过百度地图 JS API 查询出来的经纬度可能不准确(20201215 已更新)~~
 
-百度地图 API 得到的经纬度用百度坐标拾取反查,可能过于详细,区域名称与实际差别较大.
+<span id="jump">百度地图 API 得到的经纬度用百度坐标拾取反查,可能过于详细,区域名称与实际差别较大.</span>
 
 **特别说明：使用百度地图 js API 地址解析接口获得，其经纬度数据不一定准确。**
 
@@ -594,3 +600,8 @@ json to csv / to xlsx 都是比较简单的,去 npm 简单搜一下工具包就�
 ![在国家统计局页面就是显示问号](./notes/pic/在国家统计局页面就是显示问号.png)
 
 但这些镇,通过 `LocalSearch()`可以查到,结果却不知道到底是什么了,因为直接的坐标拾取效果是一样的...
+
+
+### 后台简单记录耗时日志
+
+因为之前的计时也就是`console.time()`写在前台,一卡住重新运行什么的就没有了,便用log4js记录每次数据传到后台时的时间,那第一个查询开始时也给后台发个请求,记录开始的时间,并把日志写到log文件,这样就可以看到全部执行或单个执行大概用了多久了.具体配置可见`gpfbm-backend/Log4Config.js`

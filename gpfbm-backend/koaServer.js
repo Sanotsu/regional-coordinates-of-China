@@ -10,22 +10,14 @@ app.use(koaBody());
 const cors = require('koa2-cors');
 app.use(cors())
 
+const logger = require('./Log4Config');
 // 子路由
 let page = new Router()
-page.get('/hello', async (ctx) => {
+page.get('/noteStartLog', async (ctx) => {
 
-    try {
-        // pcas-data文件夹下要手动新建一个 pcas-code-with-coordinates 文件夹,否则出错(为了方便不做检查和代码创建)
-        let jsonFileSavePath = `./pcas-data/pcas-code-with-coordinates`
-
-        if (!fs.existsSync(jsonFileSavePath)) {
-            fs.mkdirSync(jsonFileSavePath)
-        }
-    } catch (error) {
-        console.log(error)
-    }
-
-    ctx.body = 'hello page!'
+    logger.info(`前端开始调用接口,查询经纬度数据...`)
+    ctx.response.type = 'json';
+    ctx.response.body = { code: 20000, info: 'done' };
 })
 
 page.post('/area', async (ctx) => {
@@ -49,7 +41,7 @@ page.post('/area', async (ctx) => {
         if (noLngLat) {
             fs.writeFileSync(`${jsonFileSavePath}/${name}-指定区域地址查不了经纬度.json`, JSON.stringify(noLngLat), 'utf-8');
         }
-
+        logger.info(`${name} 写入文件完成`)
         ctx.response.type = 'json';
         ctx.response.body = { code: 20000, info: 'done' };
     } catch (error) {

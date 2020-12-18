@@ -281,54 +281,58 @@ export class AppComponent implements OnInit {
 
   // 获取经纬度并传给后台处理 
   async handlePcas(): Promise<any> {
+    try {
+      await this.ljs.noticeServer().toPromise();
+    } catch (error) {
+      console.log('通知后台开始记录日志失败', error);
+    } finally {
 
-    // tslint:disable-next-line: no-console
-    console.time('total');
-    // 这个31,其实就是拆分的小pcas-code-*.json文件的数量,31个省,但最好不要一次性就遍历处理31个,崩溃啊,溢出啊,挺麻烦的
-    // 三五个一次吧,改动这个for循环就好
-    for (let n = 1; n <= 10; n++) {
+      // tslint:disable-next-line: no-console
+      console.time('total');
+      // 这个31,其实就是拆分的小pcas-code-*.json文件的数量,31个省,但最好不要一次性就遍历处理31个,崩溃啊,溢出啊,挺麻烦的
+      // 三五个一次吧,改动这个for循环就好
+      for (let n = 23; n <= 31; n++) {
 
-      try {
-        const res = await this.ljs.loadpcas(n).toPromise();
-        if (!res) {
-          break;
-        }
-        // console.log(res);
-        // tslint:disable-next-line: no-console
-        console.time(`start${n}`);
-        console.log(`开始查询...${n}`);
-        await this.getChilds(res, 1);
-        // tslint:disable-next-line: no-console
-        console.timeEnd(`start${n}`);
-
-        const data = {
-          area: this.resultAreaArr, // 成功查到经纬度的结果
-          noLngLat: this.resultNoLngLatArr.length > 0 ? this.resultNoLngLatArr : '', // // 查不到经纬度的结果,如果为空,给后台传空
-          name: `pcas-code-provence${n}-with-coordinates` // 后台保存文件的名称
-        };
         try {
-          const writeRst = await this.ljs.pushDataToServer(data).toPromise();
-          // 每个省份的文件处理完,把结果数组清空(2选一的写法,都写上示意)
-          this.resultAreaArr.length = 0;
-          this.resultAreaArr = [];
-          this.resultNoLngLatArr.length = 0;
-          this.resultNoLngLatArr = [];
-
-          if (writeRst.code !== 20000) {
+          const res = await this.ljs.loadpcas(n).toPromise();
+          if (!res) {
             break;
           }
+          // console.log(res);
+          // tslint:disable-next-line: no-console
+          console.time(`start${n}`);
+          console.log(`开始查询...${n}`);
+          await this.getChilds(res, 1);
+          // tslint:disable-next-line: no-console
+          console.timeEnd(`start${n}`);
+
+          const data = {
+            area: this.resultAreaArr, // 成功查到经纬度的结果
+            noLngLat: this.resultNoLngLatArr.length > 0 ? this.resultNoLngLatArr : '', // // 查不到经纬度的结果,如果为空,给后台传空
+            name: `pcas-code-provence${n}-with-coordinates` // 后台保存文件的名称
+          };
+          try {
+            const writeRst = await this.ljs.pushDataToServer(data).toPromise();
+            // 每个省份的文件处理完,把结果数组清空(2选一的写法,都写上示意)
+            this.resultAreaArr.length = 0;
+            this.resultAreaArr = [];
+            this.resultNoLngLatArr.length = 0;
+            this.resultNoLngLatArr = [];
+
+            if (writeRst.code !== 20000) {
+              break;
+            }
+          } catch (error) {
+            console.log('等待后台写入文件失败');
+          }
+
         } catch (error) {
-          console.log('等待后台写入文件失败');
-
+          console.log(`加载pacs-code-provence${n}.json文件失败`);
         }
-
-      } catch (error) {
-        console.log(`加载pacs-code-provence${n}.json文件失败`);
       }
+      // tslint:disable-next-line: no-console
+      console.timeEnd('total');
     }
-    // tslint:disable-next-line: no-console
-    console.timeEnd('total');
-
   }
 
 

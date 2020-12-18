@@ -48,3 +48,4 @@
 # pcas-data 下，单个省带经纬度数据的json文件
 **/pacs-data/pcas-code-with-coordinates/*.json
 **/pacs-data/provenceJson/*.json
+**/logs
